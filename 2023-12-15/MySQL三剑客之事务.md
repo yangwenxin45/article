@@ -26,7 +26,7 @@
 
 # 事务的状态转换
 
-![image-20231216115532825](../image/image-20231216115532825.png)
+![image-20231216115532825](../image/事务的状态转换.png)
 
 
 
@@ -132,4 +132,45 @@ ReadView 包含 4 个比较重要的内容：
 
 如果某个版本的数据对当前事务不可见的话，那就顺着版本链找到下一个版本的数据，继续按照上边的步骤判断可见性，依此类推，直到版本链中的最后一个版本。如果最后一个版本也不可见的话，那么就意味着该条记录对该事务完全不可见，查询结果就不包含该记录
 
+
+
+# MySQL 的 RR 和 RC 隔离级别
+
+## RR 和 RC 的区别
+
+**一致性读：**
+
+* 在 RR 中，快照会在事务中第一次执行 SELECT 语句时生成，只有在本事务中对数据进行更改时才会更新快照
+* 在 RC 中，每次读取都会重新生成一个快照，总是读取行的最新版本
+
+
+
+**锁机制：**
+
+* 在 RR 中，为了解决幻读的问题，在支持 Record Lock 的同时，还支持 Gap Lock 和 Next-Key Lock
+
+* 在 RC 中，只会对索引增加 Record Lock，不会添加 Gap Lock 和 Next-Key Lock。因为 RC 的锁粒度小，所以 RC 可以提升并发量和减少死锁
+
+
+
+**主从同步：**
+
+* 在 RR 中，binlog 支持 statement、row 以及 mixed 三种格式
+* 在 RC 中，binlog 只支持 row 格式
+
+
+
+## binlog 在 RC 中不支持 statement 格式的原因
+
+| Session 1                                               | Session 2                                               |
+| ------------------------------------------------------- | ------------------------------------------------------- |
+| set session transaction isolation level read committed; | set session transaction isolation level read committed; |
+| set autocommit = 0;                                     | set autocommit = 0;                                     |
+| begin;                                                  | begin;                                                  |
+| delete from t where id < 5;                             |                                                         |
+|                                                         | insert into t values(3);                                |
+|                                                         | commit;                                                 |
+| commit;                                                 |                                                         |
+
+因为 binlog 是按照事务的提交顺序记录的，这就导致 binlog 日志中 insert 语句在 delete 语句前面执行，这样就和语句的实际执行顺序（delete 语句在 insert 语句前面执行）不一致。最终导致主从复制后，主库存在 id = 3 这一条记录，而从库不存在 id = 3 这一条记录，主从数据不一致性的情况发生
 
