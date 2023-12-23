@@ -4,7 +4,7 @@
 
 ## InnoDB 和 MyISAM 索引
 
-![聚簇和非聚簇索引](/Users/yang/article/image/聚簇和非聚簇索引.jpg)
+![聚簇和非聚簇索引](../image/聚簇和非聚簇索引.jpg)
 
 ### InnoDB 引擎
 
@@ -55,7 +55,7 @@
 1. 一直循环上述过程，直到 InnoDB 找不到下一条记录，则向 server 层报告查询完毕
 1. server 层收到 InnoDB 报告的查询完毕请求，停止查询
 
-一般情况下 server 层和存储引擎层是以记录为单位进行交互的
+一般情况下，server 层和存储引擎层是以记录为单位进行交互的
 
 
 
