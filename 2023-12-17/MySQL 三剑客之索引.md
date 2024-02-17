@@ -4,7 +4,7 @@
 
 ## InnoDB 和 MyISAM 索引
 
-![聚簇和非聚簇索引](../image/聚簇和非聚簇索引.jpg)
+![聚簇和非聚簇索引](./images/聚簇和非聚簇索引.jpg)
 
 ### InnoDB 引擎
 
